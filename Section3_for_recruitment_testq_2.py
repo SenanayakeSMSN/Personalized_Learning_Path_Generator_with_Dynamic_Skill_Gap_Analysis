@@ -1,6 +1,12 @@
-# -*- coding: utf-8 -*-
-# Cell 1: Placeholder (No code)
+"""
 
+IN THIS CODE CV DATA WONT BE PUSHIN TO THE MONGODB
+JUST KEEP IT IN THE RAM AND PROCESS EVERYTHING
+ADDED A SERACH BAR FOR THE JOB ROLE
+
+
+
+"""
 # Cell 2: Import Libraries and Setup
 import os
 import json
