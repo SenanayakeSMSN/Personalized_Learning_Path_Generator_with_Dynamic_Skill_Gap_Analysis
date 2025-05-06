@@ -1,6 +1,4 @@
 
-# Cell 1: Dependencies are assumed to be installed
-
 # Cell 2: Import Libraries and Setup
 import streamlit as st
 import os
@@ -8,7 +6,7 @@ import json
 import logging
 import re
 import time
-import tempfile # For handling uploaded files
+import tempfile 
 
 from pymongo import MongoClient
 # Removed tkinter imports
@@ -22,22 +20,16 @@ from google.api_core.exceptions import ResourceExhausted
 # Streamlit handles basic logging, but configuring can add more detail if needed
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - S1 - %(levelname)s - %(message)s')
 
-# API key pool (Hardcoded as per original)
 API_KEY_POOL = [
-    "AIzaSyBvRnSojVCuojgtGI7RisnW6-S4VpBYJWo",  # Replace with your first API key
-    "AIzaSyC8DyJIez7HxIngHo_HLHWoWCG5bACY6Xk",  # Replace with your second API key
-    "AIzaSyAURH8GcB7a3q7qJMWJX4r_Kg5AsNjXbTs"   # Replace with your third API key
+    st.secrets["secrets"]["API_KEY_1"],
+    st.secrets["secrets"]["API_KEY_2"],
+    st.secrets["secrets"]["API_KEY_3"]
 ]
-MONGODB_URI = "mongodb+srv://shashi:VSXV9WDNmRvYnA7p@clusterskillgapanalysis.vnbcnju.mongodb.net/skillgapanalysis?retryWrites=true&w=majority"
-
+MONGODB_URI = st.secrets["secrets"]["MONGODB_URI"]
 # --- State variables for API key rotation ---
 # Use Streamlit session state to maintain index across reruns
 if 'current_api_key_index' not in st.session_state:
     st.session_state.current_api_key_index = 0
-
-# Verify dependencies (optional check, Streamlit usually handles this)
-# ... (dependency checks can be removed or kept as simple logs)
-
 # Helper function to configure Gemini with retry and key switching
 def configure_gemini_with_retry():
     max_retries = 3
@@ -95,8 +87,7 @@ def connect_to_mongodb():
         client.admin.command('ismaster')
         db = client["skillgapanalysis"]
         collection = db["jobrole_skill"]
-        # Don't create index here repeatedly, assume it exists or manage separately
-        # collection.create_index("Job_Role")
+       
         logging.info("Connected to MongoDB Atlas")
         return collection
     except Exception as e:
@@ -126,7 +117,7 @@ def get_job_roles(_collection): # Pass collection explicitly for caching
         return []
 
 # Cell 4: Enhanced CV Text Extraction
-# No changes needed in the function logic itself
+
 def extract_cv_text(cv_path):
     try:
         with pdfplumber.open(cv_path) as pdf:
@@ -214,14 +205,14 @@ def extract_skills_with_gemini(cv_text):
             "   - skills: The JSON array of distinct skills from step 2.\n"
             "   - experience_duration: The total work experience duration from step 1 (redundant for compatibility).\n"
             "Output must be a valid JSON object without ```json, backticks, or any other formatting.\n"
-            # Include examples from original prompt here...
+            
             "Example 1 (multiple jobs, varied date formats):\n"
             "Input: 'Name: John Doe\\nProfessional Experience: Software Engineer at ABC Corp, 02/2019 - 12/2021; Data Scientist at XYZ Inc, June 2022 - current\\nSkills: Python, ML'\n"
             "Output: {\\\"structured_cv\\\":{\\\"name\\\":\\\"John Doe\\\",\\\"skills\\\":[\\\"Python\\\",\\\"ML\\\"],\\\"experience\\\":[\\\"Software Engineer at ABC Corp, 02/2019 - 12/2021\\\",\\\"Data Scientist at XYZ Inc, June 2022 - current\\\"],\\\"projects\\\":[],\\\"education\\\":[],\\\"contact\\\":\\\"\\\",\\\"experience_duration\\\":\\\"6 years 2 months\\\"},\\\"skills\\\":[\\\"Python\\\",\\\"Machine Learning\\\"],\\\"experience_duration\\\":\\\"6 years 2 months\\\"}\n"
             "Example 2 (short duration):\n"
             "Input: 'Name: Alice Smith\\nWork History: Intern at Tech Inc, 02/2024 - 03/2024'\n"
             "Output: {\\\"structured_cv\\\":{\\\"name\\\":\\\"Alice Smith\\\",\\\"skills\\\":[],\\\"experience\\\":[\\\"Intern at Tech Inc, 02/2024 - 03/2024\\\"],\\\"projects\\\":[],\\\"education\\\":[],\\\"contact\\\":\\\"\\\",\\\"experience_duration\\\":\\\"0 years 1 months\\\"},\\\"skills\\\":[],\\\"experience_duration\\\":\\\"0 years 1 months\\\"}\n"
-            # Add other examples as needed...
+         
             "\n\nCV Text:\n" + cv_text
         )
 
@@ -435,8 +426,7 @@ def skill_gap_analysis(cv_skills, required_skills):
 
         missing_skills_lower = required_skills_set - cv_skills_set
 
-        # Return missing skills with the original capitalization from required_skills list
-        # Create a mapping from lower case back to original capitalization
+      
         required_lower_to_original = {skill.lower().strip(): skill for skill in required_skills if skill}
         missing_skills_original_case = [required_lower_to_original[lower_skill]
                                        for lower_skill in missing_skills_lower
@@ -474,8 +464,7 @@ job_collection = connect_to_mongodb()
 job_roles = get_job_roles(job_collection)
 if not job_roles:
     st.warning("No job roles loaded from the database. Analysis requires a target role.")
-    # App can continue, but analysis button should be disabled or show message
-    # We'll handle this later in the button logic
+   
 
 # --- GUI Layout ---
 col1, col2 = st.columns([2, 3]) # Left column for controls, Right for results
@@ -748,10 +737,3 @@ with col2:
             st.subheader("Generated Learning Path")
             st.markdown(st.session_state.learning_path) # Use markdown
 
-# --- Cleanup Temporary File ---
-# This part is tricky with Streamlit's execution model.
-# A more robust way is needed, perhaps using atexit or managing temp files carefully.
-# For now, the temp file might persist until the Streamlit process stops.
-# Consider adding cleanup logic within the "Clear CV" button action.    
-# Cell 10: Run the Application
-# Streamlit runs the script top-down when executed with `streamlit run`

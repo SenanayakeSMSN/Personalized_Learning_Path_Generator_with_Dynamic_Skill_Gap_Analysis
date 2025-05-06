@@ -7,17 +7,12 @@ import sys
 import os
 import logging
 
-# --- Configuration ---
-# Names of the Python script files you want to launch
-# IMPORTANT: These files MUST be in the SAME directory as this launcher script,
-#            or you need to provide the full path to them.
+
 # UPDATE THESE TO POINT TO THE STREAMLIT VERSIONS IF YOU CONVERT THEM TOO
 SECTION1_SCRIPT = "Section1_streamlit.py" # Renamed for clarity
 SECTION3_SCRIPT = "Section3_streamlit.py" # Renamed for clarity
     
-# Setup basic logging for the launcher itself
-# Note: Streamlit manages its own logging, but this can still be useful
-#       if running the script directly or for subprocess monitoring.
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - LAUNCHER - %(levelname)s - %(message)s')
 
 # --- Functions to Launch Scripts ---

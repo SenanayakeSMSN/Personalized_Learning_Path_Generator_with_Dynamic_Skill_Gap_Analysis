@@ -18,25 +18,20 @@ from PIL import Image # Keep for pytesseract if used
 import concurrent.futures
 import uuid
 import time
-import traceback # For detailed error logging
-import pandas as pd # For displaying ranked results
+import traceback 
+import pandas as pd 
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - S3 - %(levelname)s - %(message)s')
 
-# --- IMPORTANT CONFIGURATION ---
-# Use Streamlit secrets for production is recommended, but sticking to hardcoded for now as requested.
-# --- START SENSITIVE ---
-GOOGLE_API_KEY = "AIzaSyBvRnSojVCuojgtGI7RisnW6-S4VpBYJWo" # Replace with your actual Google API Key
-MONGODB_URI = "mongodb+srv://akilapremarathna0:123@clusterskillgapanalysis.vnbcnju.mongodb.net/skillgapanalysis?retryWrites=true&w=majority" # Replace with your actual MongoDB connection string
-# --- END SENSITIVE ---
+
+GOOGLE_API_KEY = st.secrets["secrets"]["GOOGLE_API_KEY"]
+MONGODB_URI = st.secrets["secrets"]["MONGODB_URI"]
+
 TARGET_DB_NAME = "skillgapanalysis" # Should match the DB in your MONGODB_URI
 TARGET_COLLECTION_NAME = "cv_extracted_data" # Collection for extracted data
 JOB_ROLE_COLLECTION_NAME = "jobrole_skill" # Collection containing job roles and required skills
-# --- End Configuration ---
 
-# --- Dependency Imports and Checks ---
-# Assuming pdfplumber, google-generativeai, pymongo, Pillow, pytesseract installed
 try:
     import pdfplumber
 except ImportError:
@@ -780,8 +775,7 @@ def get_chatbot_response(user_question, cv_context_summary, chat_history):
 
     model = genai.GenerativeModel(GEMINI_MODEL_NAME)
 
-    # Construct conversation history for the model
-    # Limit history length to avoid exceeding token limits
+  
     history_limit = 5 # Keep last 5 pairs (user/assistant)
     model_history = []
     if chat_history:
@@ -800,8 +794,7 @@ def get_chatbot_response(user_question, cv_context_summary, chat_history):
         "\n--- Provided CV Data Summary ---\n",
         cv_context_summary,
         "\n--- End of CV Data Summary ---\n",
-        # History is passed separately via the ChatSession object if using start_chat
-        # If passing directly, format history here or omit if too complex/long
+        
         "\nUser Question:",
         user_question
     ]
@@ -831,8 +824,7 @@ st.set_page_config(layout="wide")
 st.title("📊 CV Batch Processing, Ranking & Chatbot")
 st.caption("Uses Gemini for analysis/chat and MongoDB for storage.")
 
-# --- Initialize Session State ---
-# For processing/ranking
+
 if 'batch_id' not in st.session_state:
     st.session_state.batch_id = None
     st.session_state.processing_done = False
